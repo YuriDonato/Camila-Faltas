@@ -10,29 +10,25 @@ export default function Home() {
   const [materias, setMaterias] = useState<string[]>([]);
   const [faltas, setFaltas] = useState<{ [key: string]: number }>({});
 
+  // tutorial
+  const [data, setData] = useState([]);
+  async function getData() {
+    const res = await fetch('/api/getMaterias');
+    const newData = await res.json();
+    setData(newData);
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('/api/materias');
-        setMaterias(response.data.materias);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    getData();
+  },[]);
+  // fim tutorial
 
-    fetchData();
-  }, []);
 
-  const addMateria = async () => {
+  const addMateria = () => {
     const novaMateria = prompt('Digite o nome da matéria:');
     if (novaMateria) {
-      try {
-        await axios.post('/api/materias', { materia: novaMateria });
-        setMaterias([...materias, novaMateria]);
-        setFaltas({ ...faltas, [novaMateria]: 0 });
-      } catch (error) {
-        console.error(error);
-      }
+      setMaterias([...materias, novaMateria]);
+      setFaltas({ ...faltas, [novaMateria]: 0 });
     }
   };
 
