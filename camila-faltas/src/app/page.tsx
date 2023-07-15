@@ -61,12 +61,20 @@ export default function Home() {
         event.preventDefault();
 
         const ref = database.ref("materias");
-
-        const dados = {
-            nome,
-            faltas
-        };
-        ref.push(dados);
+        if(nome.length>0 && faltas.length<1){
+            const faltas = "0"
+            const dados = {
+                nome,
+                faltas
+            };
+            ref.push(dados);
+        }else if(nome.length>0){
+            const dados = {
+                nome,
+                faltas
+            };
+            ref.push(dados);
+        }
 
         resetInputSpace();
         setLoading(false)
@@ -74,6 +82,21 @@ export default function Home() {
 
     function removerMateria(ref: string){
         const referencia = database.ref(`materias/${ref}`).remove();
+    }
+
+    function adicionarFalta(materia: Materia){
+        const ref = database.ref('materias/')
+        const nome = materia.nome;
+        const chave = materia.chave;
+        const faltaAtual = materia.faltas;
+        const faltaIncrementada =  1 + +faltaAtual
+
+        const dados = {
+            'nome': nome,
+            'faltas': faltaIncrementada
+        }
+        ref.child(chave).update(dados)
+
     }
 
     function calcularFalta(falta: String){
@@ -86,7 +109,7 @@ export default function Home() {
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-pink-200">
-            <div className="p-4 bg-white rounded-lg shadow-lg">
+            <div className="p-4 bg-white rounded-lg shadow-lg md:m-10">
                 <h1 className="text-2xl font-bold mb-4 flex items-center">
                     Controle de Presenças do Meu Amor. <AiFillHeart />{" "}
                 </h1>
@@ -114,9 +137,9 @@ export default function Home() {
                                     </span>
                                     <button
                                         className="px-2 py-1 rounded bg-red-500 text-white"
-                                        // onClick={() =>
-                                        //     incrementarFalta(materia)
-                                        // }
+                                        onClick={() =>
+                                            adicionarFalta(materia)
+                                        }
                                     >
                                         Faltei
                                     </button>
@@ -147,12 +170,14 @@ export default function Home() {
                                     value={nome}
                                     onChange={(event) => setNome(event.target.value)}
                                     placeholder="Nova Materia"
+                                    required={true}
                                     my={4}
                                 />
                                 <Input
                                     value={faltas}
                                     onChange={(event) => setFaltas(event.target.value)}
                                     placeholder="Quanto já faltou"
+                                    required={true}
                                     my={4}
                                 />
                                 <Button
@@ -160,7 +185,6 @@ export default function Home() {
                                     rounded={"15px"}
                                     bg="pink"
                                     isLoading={loading}
-                                    disabled={nome === "" || faltas === ""}
                                     color="white"
                                     type="button"
                                     onClick={gravar}
