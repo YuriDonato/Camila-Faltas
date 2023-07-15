@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { AiFillHeart } from "react-icons/ai";
 import {
     Box,
@@ -12,66 +12,77 @@ import {
     Button,
 } from "@chakra-ui/react";
 
+import { database } from "./services/firebase";
+
+type Materia = {
+    chave: string;
+    nome: string;
+    faltas: string;
+}
+
 export default function Home() {
-    const [materias, setMaterias] = useState<string[]>([]);
-    const [faltas, setFaltas] = useState<{ [key: string]: number }>({});
-//! deletar
-    const [title, setTitle] = useState("");
-    const [falta, setFalta] = useState("");
+    const [nome, setNome] = useState("");
+    const [faltas, setFaltas] = useState("");
+
+    const [materias, setMaterias] = useState<Materia[]>();
+
+    const [chave, setChave] = useState("");
+    const [atualizando, setAtualizando] = useState(false);
     const [loading, setLoading] = useState(false);
-    const requestOptions = {
-        method: "POST",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ data: { title: title, falta: falta } }),
-    };
 
-    const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setTitle(event.target.value);
-    };
-    
-    const handleFaltaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setFalta(event.target.value);
-    };
+    useEffect(() => {
+        setLoading(true)
+        const refMaterias = database.ref("materias");
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      setLoading(true);
-      e.preventDefault();
-      await fetch("/api/add-materias", requestOptions)
-        .then(() => {
-          setFalta("");
-          setTitle("");
-          setLoading(false);
-        })
-        .catch((e) => {
-          console.log(e);
-          setLoading(false);
+        refMaterias.on("value", (resultado) => {
+            const resultadoMateria = Object.entries<Materia>(
+                resultado.val() ?? {}
+            ).map(([chave, valor]) => {
+                return {
+                    chave: chave,
+                    nome: valor.nome,
+                    faltas: valor.faltas
+                };
+            })
+
+            setMaterias(resultadoMateria);
         });
-    };
-    
-//! até aqui
-    const addMateria = () => {
-        const novaMateria = prompt("Digite o nome da matéria:");
-        if (novaMateria) {
-            setMaterias([...materias, novaMateria]);
-            setFaltas({ ...faltas, [novaMateria]: 0 });
-        }
-    };
 
-    const removerMateria = (materia: string) => {
-        const novasMaterias = materias.filter((m) => m !== materia);
-        const { [materia]: _, ...novasFaltas } = faltas;
-        setMaterias(novasMaterias);
-        setFaltas(novasFaltas);
-    };
+        setLoading(false)
+    }, []);
 
-    const incrementarFalta = (materia: string) => {
-        setFaltas({ ...faltas, [materia]: faltas[materia] + 1 });
-    };
+    function resetInputSpace(){
+        setNome("");
+        setFaltas("");
+    }
 
-    const faltasRestantes = (materia: string) => {
-        const faltasAtuais = faltas[materia] || 0;
-        return 4 - faltasAtuais;
-    };
+    function gravar(event: FormEvent){
+        setLoading(true)
+        event.preventDefault();
+
+        const ref = database.ref("materias");
+
+        const dados = {
+            nome,
+            faltas
+        };
+        ref.push(dados);
+
+        resetInputSpace();
+        setLoading(false)
+    }
+
+    function removerMateria(ref: string){
+        const referencia = database.ref(`materias/${ref}`).remove();
+    }
+
+    function calcularFalta(falta: String){
+        const faltaRestante: number = 4 - +falta;
+        return faltaRestante
+    }
+
+
+
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-pink-200">
@@ -79,37 +90,41 @@ export default function Home() {
                 <h1 className="text-2xl font-bold mb-4 flex items-center">
                     Controle de Presenças do Meu Amor. <AiFillHeart />{" "}
                 </h1>
-                {materias.length === 0 ? (
+
+                <div>
+
+                </div>
+                {materias?.length === 0 ? (
                     <p className="text-gray-500">Nenhuma matéria adicionada.</p>
                 ) : (
                     <ul>
-                        {materias.map((materia) => (
+                        {materias?.map((materia) => (
                             <li
-                                key={materia}
+                                key={materia.chave}
                                 className="flex justify-between items-center mb-2"
                             >
-                                <span>{materia}</span>
+                                <span>{materia.nome}</span>
                                 <div className="flex items-center">
                                     <span className="mr-2">
-                                        Faltas: {faltas[materia] || 0}
+                                        Faltas: {materia.faltas}
                                     </span>
                                     <span className="mr-2">
                                         Faltas Restantes:{" "}
-                                        {faltasRestantes(materia)}
+                                        {calcularFalta(materia.faltas)}
                                     </span>
                                     <button
                                         className="px-2 py-1 rounded bg-red-500 text-white"
-                                        onClick={() =>
-                                            incrementarFalta(materia)
-                                        }
+                                        // onClick={() =>
+                                        //     incrementarFalta(materia)
+                                        // }
                                     >
-                                        Falta
+                                        Faltei
                                     </button>
                                     <button
                                         className="px-2 py-1 rounded bg-red-500 text-white ml-2"
-                                        onClick={() => removerMateria(materia)}
+                                        onClick={() => removerMateria(materia.chave)}
                                     >
-                                        Remover
+                                        X
                                     </button>
                                 </div>
                             </li>
@@ -126,17 +141,18 @@ export default function Home() {
                             </AccordionButton>
                         </h2>
                         <AccordionPanel pb="4">
-                            <form onSubmit={onSubmit}>
+                            <form>
                                 <Input
-                                    value={title}
-                                    onChange={handleTitleChange}
+                                    type="text"
+                                    value={nome}
+                                    onChange={(event) => setNome(event.target.value)}
                                     placeholder="Nova Materia"
                                     my={4}
                                 />
                                 <Input
-                                    value={falta}
-                                    onChange={handleFaltaChange}
-                                    placeholder="Quantidade de Faltas"
+                                    value={faltas}
+                                    onChange={(event) => setFaltas(event.target.value)}
+                                    placeholder="Quanto já faltou"
                                     my={4}
                                 />
                                 <Button
@@ -144,9 +160,10 @@ export default function Home() {
                                     rounded={"15px"}
                                     bg="pink"
                                     isLoading={loading}
-                                    disabled={title === "" || falta === ""}
+                                    disabled={nome === "" || faltas === ""}
                                     color="white"
-                                    type="submit"
+                                    type="button"
+                                    onClick={gravar}
                                 >
                                     Add materia
                                 </Button>
