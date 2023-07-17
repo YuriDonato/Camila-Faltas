@@ -10,6 +10,7 @@ import {
     AccordionPanel,
     Input,
     Button,
+    Checkbox
 } from "@chakra-ui/react";
 
 import { database } from "./services/firebase";
@@ -95,12 +96,16 @@ export default function Home() {
             'nome': nome,
             'faltas': faltaIncrementada
         }
-        ref.child(chave).update(dados)
+        if(+faltaAtual >= 5){
+
+        }else{
+            ref.child(chave).update(dados)
+        }
 
     }
 
     function calcularFalta(falta: String){
-        const faltaRestante: number = 4 - +falta;
+        const faltaRestante: number = 5 - +falta;
         return faltaRestante
     }
 
