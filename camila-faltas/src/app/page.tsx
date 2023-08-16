@@ -145,12 +145,6 @@ export default function Home() {
                                         >
                                             Faltei
                                         </button>
-                                        <button
-                                            className="px-2 py-1 rounded bg-red-500 text-white ml-2"
-                                            onClick={() => removerMateria(materia.chave)}
-                                        >
-                                            X
-                                        </button>
                                     </div>
                                 </div>
                             </li>
