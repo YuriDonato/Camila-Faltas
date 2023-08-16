@@ -3,5 +3,9 @@
 @tailwind utilities;
 
 *{
-    user-select: auto;
+    user-select: none;
+}
+
+div{
+    user-select: none;
 }
