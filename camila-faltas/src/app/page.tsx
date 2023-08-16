@@ -165,6 +165,7 @@ export default function Home() {
                                         </button>
                                     </div>
                                 </div>
+                                <hr className="mt-4"></hr>
                             </li>
                         ))}
                     </ul>
