@@ -148,20 +148,20 @@ export default function Home() {
                                     </span>
                                     <div className="flex items-center">
                                         <button
-                                            className="px-2 py-1 rounded bg-red-500 text-white"
+                                            className="px-2 py-1 rounded-full bg-red-500 text-white"
                                             onClick={() =>
                                                 adicionarFalta(materia)
                                             }
                                         >
-                                            Faltei
+                                            +
                                         </button>
                                         <button
-                                            className="px-2 py-1 rounded bg-green-500 text-white ml-2"
+                                            className="px-2 py-1 rounded-full bg-green-500 text-white ml-2"
                                             onClick={() =>
                                                 removerFalta(materia)
                                             } // Add this button
                                         >
-                                            Remover Falta
+                                            -
                                         </button>
                                     </div>
                                 </div>
