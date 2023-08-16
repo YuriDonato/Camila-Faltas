@@ -114,14 +114,11 @@ export default function Home() {
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-pink-200">
-            <div className="p-4 bg-white rounded-lg shadow-lg md:m-10">
+            <div className="p-4 bg-white rounded-lg shadow-lg md:m-10 w-full max-w-md">
                 <h1 className="text-2xl font-bold mb-4 flex items-center">
                     Controle de Presenças do Meu Amor. <AiFillHeart />{" "}
                 </h1>
 
-                <div>
-
-                </div>
                 {materias?.length === 0 ? (
                     <p className="text-gray-500">Nenhuma matéria adicionada.</p>
                 ) : (
@@ -129,31 +126,32 @@ export default function Home() {
                         {materias?.map((materia) => (
                             <li
                                 key={materia.chave}
-                                className="flex justify-between items-center mb-2"
+                                className="mb-4"
                             >
-                                <span>{materia.nome}</span>
-                                <div className="flex items-center">
-                                    <span className="mr-2">
+                                <div className="flex justify-between items-center">
+                                    <span>{materia.nome}</span>
+                                    <span>
                                         Faltas: {materia.faltas}
                                     </span>
-                                    <span className="mr-2">
-                                        Faltas Restantes:{" "}
-                                        {calcularFalta(materia.faltas)}
+                                </div>
+                                <div className="flex justify-between items-center mt-2">
+                                    <span>
+                                        Faltas Restantes: {calcularFalta(materia.faltas)}
                                     </span>
-                                    <button
-                                        className="px-2 py-1 rounded bg-red-500 text-white"
-                                        onClick={() =>
-                                            adicionarFalta(materia)
-                                        }
-                                    >
-                                        Faltei
-                                    </button>
-                                    <button
-                                        className="px-2 py-1 rounded bg-red-500 text-white ml-2"
-                                        onClick={() => removerMateria(materia.chave)}
-                                    >
-                                        X
-                                    </button>
+                                    <div className="flex items-center">
+                                        <button
+                                            className="px-2 py-1 rounded bg-red-500 text-white"
+                                            onClick={() => adicionarFalta(materia)}
+                                        >
+                                            Faltei
+                                        </button>
+                                        <button
+                                            className="px-2 py-1 rounded bg-red-500 text-white ml-2"
+                                            onClick={() => removerMateria(materia.chave)}
+                                        >
+                                            X
+                                        </button>
+                                    </div>
                                 </div>
                             </li>
                         ))}
